@@ -23,6 +23,7 @@
 #define infraredSensor       // enable infrared controller support
 
 #if defined infraredSensor
+#define DECODE_NEC //very small NEC only decoder. Reduces memory footprint and decreases decoding time.
 #include <IRremote.hpp>
 #endif
 
@@ -170,6 +171,7 @@ Servo servoWristPitch;
 #if defined infraredSensor
 //IRrecv  irrecv(RECV_PIN);
 //decode_results results;
+IRRawDataType lastRawDataToRepeat = 0; //keep the last ir command to repeat it when the ir key is being hold.
 
 // Please, replace codes  of infrared controller with your own codes
 // in function CheckIrController. Four new codes below are placeholders
@@ -178,31 +180,36 @@ void  CheckIrController()
 {
   if (IrReceiver.decode())
   {
-    switch  (IrReceiver.decodedIRData.decodedRawData)
+    if (IrReceiver.decodedIRData.decodedRawData == 0) //last ir key is being hold
+      {} // repeat the last command, do not change lastNonzeroRawData
+    else
+      {lastRawDataToRepeat = IrReceiver.decodedIRData.decodedRawData;}
+
+    switch (lastRawDataToRepeat) //(IrReceiver.decodedIRData.decodedRawData)
     {
     case 0xE916FF00: //car_mp3 0
-      dx  = 5;
+      dx  = 4;
       break;
     case 0xF30CFF00: //car_mp3 1
-      dx =  -5;
+      dx =  -4;
       break;
     case 0xE619FF00: //car_mp3 100+
-      dy  = 5;
+      dy  = 4;
       break;
     case 0xE718FF00: //car_mp3 2
-      dy  = -5;
+      dy  = -4;
       break;
     case 0xF20DFF00: //car_mp3 200+
-      dz = -5;
+      dz = -4;
       break;
     case 0xA15EFF00: //car_mp3 3
-      dz = 5;
+      dz = 4;
       break;
     case 0xF708FF00: //car_mp3 4
-      dg = -5;
+      dg = -4;
       break;
     case  0xBD42FF00: //car_mp3 7
-      dg = 5;
+      dg = 4;
       break;
 
     // Legacy IR "button" toggles — map these to toggle recording/play states directly
@@ -218,6 +225,7 @@ void  CheckIrController()
         recPos = 0;
         cyclesRecord = 0;
       }
+      lastRawDataToRepeat = 0; //do not repeat this command
       break;
 
     case 0xBC43FF00: //car_mp3 PLAY
@@ -230,6 +238,7 @@ void  CheckIrController()
         play = true;
         repeatePlaying = false;
       }
+      lastRawDataToRepeat = 0; //do not repeat this command
       break;
 
     case 0xBF40FF00: //car_mp3 NEXT
@@ -244,24 +253,25 @@ void  CheckIrController()
       {
         play  = false;
       }
+      lastRawDataToRepeat = 0; //do not repeat this command
       break;
 
     // New wrist control IR codes ----------------------------
     // WristRoll increase
     case 0xE31CFF00: //car_mp3 5
-      dwr = 5;   // roll increase
+      dwr = 4;   // roll increase
       break;
     // WristRoll decrease
     case 0xAD52FF00: //car_mp3 8
-      dwr = -5;  // roll decrease
+      dwr = -4;  // roll decrease
       break;
     // WristPitch increase
     case 0xA55AFF00: //car_mp3 6
-      dwp = 5;   // pitch increase
+      dwp = 4;   // pitch increase
       break;
     // WristPitch decrease
     case 0xB54AFF00: //car_mp3 9
-      dwp = -5;  // pitch decrease
+      dwp = -4;  // pitch decrease
       break;
     // --------------------------------------------------------------------
     }
@@ -444,7 +454,7 @@ void loop() {
   }
 
   // Read joystick analog values if no IR delta present for that axis
-  if (dx == 0) dx = map(analogRead(xdirPin), 0, 1023, 3.5, -3.5);
+  if (dx == 0) dx = map(analogRead(xdirPin), 0, 1023, 4.0, -4.0);
   if (dy == 0) dy = map(analogRead(ydirPin), 0, 1023, 4.0, -4.0);
   if (dz ==  0) dz = map(analogRead(zdirPin), 0, 1023, 4.0, -4.0);
   if (dg == 0) dg = map(analogRead(gdirPin),  0, 1023, -4.0, 4.0);
