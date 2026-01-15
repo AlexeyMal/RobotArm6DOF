@@ -1,4 +1,7 @@
-# RobotArm6DOF
+# RobotArm6DOF
+
+ ![](https://github.com/AlexeyMal/RobotArm6DOF/blob/main/6DOF.jpg)
+ 
 Robot Arm 6 DOF 
 Arduino UNO 
 HU-M16 joystick shield 
@@ -21,3 +24,4 @@ Hold the left joystick button to control WristRoll and WristPitch with the right
 Press the button on joystick 1 to Start/Stop the recording. 
 Press the button on joystick 2 to Start/Stop the playback. 
 Press and hold button for 2 seconds on joistick 2 to Start/Stop the playback in a loop.
+
